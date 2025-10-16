@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -7,11 +9,11 @@ const SignIn = () => {
     password: '',
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Get loading and error from Redux state
+  const { loading, error } = useSelector((state) => state.user);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -21,12 +23,12 @@ const SignIn = () => {
     }));
   };
 
-  // Handle form submission
+  // Handle form submission with Redux
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
+
+    // Dispatch loading start
+    dispatch(signInStart());
 
     try {
       const res = await fetch('/api/auth/signin', {
@@ -40,19 +42,18 @@ const SignIn = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setSuccess('Login successful!');
-        console.log('Signin successful:', data);
+        // Dispatch success with user data
+        dispatch(signInSuccess(data));
 
-        // redirect after short delay to  home
+        // Redirect after successful login
         setTimeout(() => navigate('/'), 1500);
       } else {
-        setError(data.message || 'Login failed. Please check your credentials.');
+        // Dispatch failure with error message
+        dispatch(signInFailure(data.message || 'Login failed. Please check your credentials.'));
       }
     } catch (err) {
       console.error('Error during signin:', err);
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+      dispatch(signInFailure('Something went wrong. Please try again.'));
     }
   };
 
@@ -109,9 +110,8 @@ const SignIn = () => {
           </button>
         </form>
 
-        {/* Feedback messages */}
+        {/* Show error message */}
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
-        {success && <p className="mt-4 text-center text-green-600">{success}</p>}
 
         <p className="mt-6 text-center text-gray-600">
           Don't have an account?{' '}
