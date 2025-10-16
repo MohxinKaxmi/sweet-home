@@ -13,6 +13,5 @@ createRoot(document.getElementById('root')).render(
       <PersistGate loading={null} persistor={presistor}>
         <App />
       </PersistGate>
-      
     </Provider>
 );
