@@ -14,7 +14,7 @@ const SignUp = () => {
 
   const navigate = useNavigate();
 
-  // ✅ Handle input changes
+  // Handle input changes
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -22,12 +22,19 @@ const SignUp = () => {
     }));
   };
 
-  // ✅ Handle form submission
+  // Handle form submission with password length validation
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setSuccess('');
+
+    // Check password length before submitting
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return; // Stop form submission if invalid
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch('/api/auth/signup', {
@@ -44,7 +51,7 @@ const SignUp = () => {
         setSuccess('Account created successfully!');
         console.log('Signup successful:', data);
 
-        // ✅ Optional: redirect after short delay
+        // Redirect to Sign-In page after a short delay
         setTimeout(() => navigate('/Sign-In'), 1500);
       } else {
         setError(data.message || 'Signup failed. Please try again.');
@@ -126,7 +133,7 @@ const SignUp = () => {
           </button>
         </form>
 
-        {/* ✅ Feedback messages */}
+        {/* Feedback messages */}
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
         {success && <p className="mt-4 text-center text-green-600">{success}</p>}
 

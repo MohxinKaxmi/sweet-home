@@ -5,16 +5,16 @@ import jwt from 'jsonwebtoken';
 
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
+
+  // Backend password length validation
+  if (password.length < 8) {
+    return next(errorHandler(400, 'Password must be at least 8 characters long.'));
+  }
+
   try {
-    // Hash password before saving
     const hashedPassword = bcryptjs.hashSync(password, 10);
-
-    // Create user instance
     const newUser = new User({ username, email, password: hashedPassword });
-
-    // Save user to DB
     await newUser.save();
-
     res.status(201).json("User created successfully");
   } catch (error) {
     next(error);
