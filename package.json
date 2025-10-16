@@ -16,9 +16,10 @@
     "dotenv": "^17.2.3",
     "env": "^0.0.2",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.20.0",
     "mongoos": "^0.0.1-security",
-    "mongoose": "^8.19.1",
+    "mongoose": "^7.8.7",
     "nodemon": "^3.1.10"
   }
 }
