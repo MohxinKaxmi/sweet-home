@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
+import OAuth from '../Components/OAuth';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +27,7 @@ const SignIn = () => {
   // Handle form submission with Redux
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple submits during loading
 
     // Dispatch loading start
     dispatch(signInStart());
@@ -46,7 +48,7 @@ const SignIn = () => {
         dispatch(signInSuccess(data));
 
         // Redirect after successful login
-        setTimeout(() => navigate('/'), 1500);
+        setTimeout(() => navigate('/Home'), 1500);
       } else {
         // Dispatch failure with error message
         dispatch(signInFailure(data.message || 'Login failed. Please check your credentials.'));
@@ -78,6 +80,7 @@ const SignIn = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
+              autoComplete="email" 
             />
           </div>
 
@@ -94,6 +97,7 @@ const SignIn = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
+              autoComplete="current-password" 
             />
           </div>
 
@@ -108,6 +112,7 @@ const SignIn = () => {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <OAuth />
         </form>
 
         {/* Show error message */}

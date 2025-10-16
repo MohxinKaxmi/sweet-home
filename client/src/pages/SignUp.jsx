@@ -1,5 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
+import OAuth from '../Components/OAuth'; 
+
+
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -85,6 +88,7 @@ const SignUp = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
+              autoComplete="username"
             />
           </div>
 
@@ -101,6 +105,7 @@ const SignUp = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -117,6 +122,7 @@ const SignUp = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
+              autoComplete="new-password"
             />
           </div>
 
@@ -131,6 +137,7 @@ const SignUp = () => {
           >
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
+          <OAuth/>
         </form>
 
         {/* Feedback messages */}
