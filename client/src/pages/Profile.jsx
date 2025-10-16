@@ -1,10 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from '../redux/user/userSlice'; // ✅ make sure path is correct
 
 const ProfileForm = () => {
   const fileRef = useRef(null);
-  const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const { currentUser, loading } = useSelector((state) => state.user);
 
   const [username, setUsername] = useState(currentUser?.username || '');
   const [email, setEmail] = useState(currentUser?.email || '');
@@ -15,18 +21,15 @@ const ProfileForm = () => {
       'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'
   );
 
-  // ✅ Handle file upload with image validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check if the file is an image
       if (!file.type.startsWith('image/')) {
         toast.error('❌ Only image files are allowed!');
-        e.target.value = ''; // Clear input
+        e.target.value = '';
         return;
       }
 
-      // Convert image to Base64
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result;
@@ -43,15 +46,39 @@ const ProfileForm = () => {
     if (savedPic) setPreview(savedPic);
   }, []);
 
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    console.log({
-      username,
-      email,
-      password,
-      avatar: preview,
-    });
-    toast.success('✅ Profile updated successfully!');
+    dispatch(updateUserStart());
+    try {
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          avatar: preview,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        dispatch(updateUserFailure(data.message));
+        toast.error(data.message || '❌ Failed to update');
+        return;
+      }
+
+      dispatch(updateUserSuccess(data));
+      toast.success('✅ Profile updated successfully!');
+      setPassword('');
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+      toast.error('❌ Server error');
+    }
   };
 
   return (
@@ -60,7 +87,6 @@ const ProfileForm = () => {
         {username || 'Your Name'}
       </h1>
 
-      {/* Profile Picture */}
       <div className="flex justify-center mb-8">
         <img
           onClick={() => fileRef.current.click()}
@@ -77,13 +103,9 @@ const ProfileForm = () => {
         />
       </div>
 
-      {/* Form */}
       <form onSubmit={handleUpdate} className="space-y-6">
         <div>
-          <label
-            htmlFor="username"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
+          <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-1">
             Username
           </label>
           <input
@@ -98,10 +120,7 @@ const ProfileForm = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
             Email
           </label>
           <input
@@ -116,10 +135,7 @@ const ProfileForm = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-semibold text-gray-700 mb-1"
-          >
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
             Password
           </label>
           <input
@@ -134,27 +150,16 @@ const ProfileForm = () => {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-indigo-700 transition"
+          disabled={loading}
+          className={`w-full font-semibold py-3 rounded-lg shadow-md transition ${
+            loading
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          }`}
         >
-          Update Profile
+          {loading ? 'Updating...' : 'Update Profile'}
         </button>
       </form>
-
-      {/* Bottom links */}
-      <div className="mt-8 flex justify-between text-sm font-medium text-red-600">
-        <button
-          type="button"
-          className="hover:underline focus:outline-none focus:ring-2 focus:ring-red-400 rounded"
-        >
-          Delete Account
-        </button>
-        <button
-          type="button"
-          className="hover:underline focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded"
-        >
-          Sign Out
-        </button>
-      </div>
     </div>
   );
 };
