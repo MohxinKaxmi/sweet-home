@@ -25,8 +25,10 @@ const Header = () => {
         {/* Center: Search Bar with icon inside */}
         <div className="w-full md:w-1/2 relative">
           <MagnifyingGlassIcon className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          <input
-            type="text"
+          <input type='Search'
+            autoComplete='on'
+            id='Search'
+            name='Search' 
             placeholder="Search properties, locations, agents..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm"
           />

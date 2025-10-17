@@ -5,7 +5,7 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
-} from '../redux/user/userSlice'; // ✅ make sure path is correct
+} from '../redux/user/userSlice';
 
 const ProfileForm = () => {
   const fileRef = useRef(null);
@@ -21,6 +21,7 @@ const ProfileForm = () => {
       'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'
   );
 
+  // ✅ Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -41,27 +42,40 @@ const ProfileForm = () => {
     }
   };
 
+  // ✅ Load image from localStorage
   useEffect(() => {
     const savedPic = localStorage.getItem('profilePic');
     if (savedPic) setPreview(savedPic);
   }, []);
 
+  // ✅ Handle profile update
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    // ⚠️ Password validation
+    if (password && password.length < 8) {
+      toast.error('❌ Password must be at least 8 characters long.');
+      return;
+    }
+
     dispatch(updateUserStart());
+
     try {
+      // ✅ Build the request body dynamically
+      const updateBody = {
+        username,
+        email,
+        avatar: preview,
+        ...(password ? { password } : {}), // only add password if not empty
+      };
+
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          avatar: preview,
-        }),
+        body: JSON.stringify(updateBody),
       });
 
       const data = await res.json();
@@ -141,11 +155,12 @@ const ProfileForm = () => {
           <input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Enter new password (optional)"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <p className="text-xs text-red-500 mt-1">Leave blank to keep current password</p>
         </div>
 
         <button
