@@ -5,6 +5,9 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
 } from '../redux/user/userSlice';
 
 const ProfileForm = () => {
@@ -21,7 +24,6 @@ const ProfileForm = () => {
       'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png'
   );
 
-  // ✅ Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -42,17 +44,14 @@ const ProfileForm = () => {
     }
   };
 
-  // ✅ Load image from localStorage
   useEffect(() => {
     const savedPic = localStorage.getItem('profilePic');
     if (savedPic) setPreview(savedPic);
   }, []);
 
-  // ✅ Handle profile update
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    // ⚠️ Password validation
     if (password && password.length < 8) {
       toast.error('❌ Password must be at least 8 characters long.');
       return;
@@ -61,12 +60,11 @@ const ProfileForm = () => {
     dispatch(updateUserStart());
 
     try {
-      // ✅ Build the request body dynamically
       const updateBody = {
         username,
         email,
         avatar: preview,
-        ...(password ? { password } : {}), // only add password if not empty
+        ...(password ? { password } : {}),
       };
 
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
@@ -94,6 +92,42 @@ const ProfileForm = () => {
       toast.error('❌ Server error');
     }
   };
+
+const handleSignOut = () => {
+  dispatch({ type: 'user/logout' }); // or your logout action
+  localStorage.removeItem('profilePic');
+  window.location.href = '/login'; // adjust path if needed
+};
+
+const handleDeleteAccount = async () => {
+  if (!window.confirm('Are you sure you want to delete your account?')) return;
+  
+  try {
+    dispatch(deleteUserStart());
+    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.success === false) {
+      dispatch(deleteUserFailure(data.message));
+      toast.error(data.message || '❌ Failed to delete account');
+      return;
+    }
+
+    dispatch(deleteUserSuccess(data));
+    toast.success('✅ Account deleted successfully!');
+    setTimeout(() => {
+    }, 2000);
+  } catch (error) {
+    dispatch(deleteUserFailure(error.message));
+    toast.error('❌ Server error');
+  }
+};
+
+
 
   return (
     <div className="max-w-md mx-auto p-8 bg-white rounded-xl shadow-lg mt-16 ring-1 ring-gray-200">
@@ -174,6 +208,20 @@ const ProfileForm = () => {
         >
           {loading ? 'Updating...' : 'Update Profile'}
         </button>
+
+        
+        <div className="mt-8 flex justify-between text-sm font-medium">
+          <button type="button"
+          onClick={handleDeleteAccount} 
+          className="text-red-600 hover:underline">
+            Delete Account
+          </button>
+          <button type="button"
+          onClick={handleSignOut}
+          className="text-indigo-600 hover:underline">
+            Sign Out
+          </button>
+        </div>
       </form>
     </div>
   );

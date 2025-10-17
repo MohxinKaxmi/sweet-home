@@ -40,3 +40,31 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteUser = async (req, res, next) => {
+  if (req.user.id !== req.params.id) {
+    return next(errorHandler(401, "You can only delete your own account"));
+  }
+
+  try {
+    await User.findByIdAndDelete(req.params.id);
+
+    // ✅ Clear cookie with the same options you set it with
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' ? true : false,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully and logged out",
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
