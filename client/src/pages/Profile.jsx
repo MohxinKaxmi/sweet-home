@@ -8,6 +8,9 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   deleteUserFailure,
+  signoutUserStart,
+  signoutUserFailure,
+  signoutUserSuccess,
 } from '../redux/user/userSlice';
 
 const ProfileForm = () => {
@@ -93,11 +96,6 @@ const ProfileForm = () => {
     }
   };
 
-const handleSignOut = () => {
-  dispatch({ type: 'user/logout' }); // or your logout action
-  localStorage.removeItem('profilePic');
-  window.location.href = '/login'; // adjust path if needed
-};
 
 const handleDeleteAccount = async () => {
   if (!window.confirm('Are you sure you want to delete your account?')) return;
@@ -127,6 +125,26 @@ const handleDeleteAccount = async () => {
   }
 };
 
+const handleSignOut = async () => {
+  try {
+    dispatch(signoutUserStart());
+
+    const res = await fetch('/api/auth/signout');
+    const data = await res.json();
+
+    if (data.success === false) {
+      dispatch(signoutUserFailure(data.message));
+      toast.error(data.message || 'Sign out failed.');
+      return;
+    }
+
+    dispatch(signoutUserSuccess(data));
+    toast.success('Signed out successfully!');
+  } catch (error) {
+    dispatch(signoutUserFailure('Sign out failed. Please try again.'));
+    toast.error('Sign out failed. Please try again.');
+  }
+};
 
 
   return (

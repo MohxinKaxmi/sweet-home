@@ -4,6 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import OAuth from '../Components/OAuth';
 
+// ✅ Import toast and ToastContainer
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const SignIn = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -12,11 +16,8 @@ const SignIn = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // Get loading and error from Redux state
   const { loading, error } = useSelector((state) => state.user);
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -24,13 +25,10 @@ const SignIn = () => {
     }));
   };
 
-
-  // Handle form submission with Redux
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) return; // Prevent multiple submits during loading
+    if (loading) return;
 
-    // Dispatch loading start
     dispatch(signInStart());
 
     try {
@@ -45,18 +43,17 @@ const SignIn = () => {
       const data = await res.json();
 
       if (res.ok) {
-        // Dispatch success with user data
         dispatch(signInSuccess(data));
-
-        // Redirect after successful login
-        setTimeout(() => navigate('/Home'), 1500);
+        toast.success('Signed in successfully! Redirecting...');
+        setTimeout(() => navigate('/'), 1500);
       } else {
-        // Dispatch failure with error message
-        dispatch(signInFailure(data.message || 'Login failed. Please check your credentials.'));
+        dispatch(signInFailure(data.message || 'Login failed.'));
+        toast.error(data.message || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
       console.error('Error during signin:', err);
-      dispatch(signInFailure('Something went wrong. Please try again.'));
+      dispatch(signInFailure('Something went wrong.'));
+      toast.error('Something went wrong. Please try again.');
     }
   };
 
@@ -81,7 +78,7 @@ const SignIn = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
-              autoComplete="email" 
+              autoComplete="email"
             />
           </div>
 
@@ -98,7 +95,7 @@ const SignIn = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               onChange={handleChange}
               required
-              autoComplete="current-password" 
+              autoComplete="current-password"
             />
           </div>
 
@@ -116,7 +113,7 @@ const SignIn = () => {
           <OAuth />
         </form>
 
-        {/* Show error message */}
+        {/* Optional: Keep error message below if you want */}
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
 
         <p className="mt-6 text-center text-gray-600">
@@ -126,6 +123,8 @@ const SignIn = () => {
           </Link>
         </p>
       </div>
+
+      
     </div>
   );
 };

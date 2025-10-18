@@ -49,7 +49,6 @@ export const deleteUser = async (req, res, next) => {
   try {
     await User.findByIdAndDelete(req.params.id);
 
-    // ✅ Clear cookie with the same options you set it with
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production' ? true : false,
